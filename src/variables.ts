@@ -1,0 +1,9 @@
+export const bgMain = "#222831";
+export const darkGrey = "#393E46";
+export const aqua = "#00ADB5";
+export const smoothWhite = "#EEEEEE";
+export const blue = "#3F72AF";
+export const orange = "#F08A5D";
+export const lightGrey = "#DBE2EF";
+export const lightAqua = "#A6E3E9";
+export const grey = "#484e58";
