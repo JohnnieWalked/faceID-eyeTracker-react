@@ -26,7 +26,7 @@ function NameInput() {
       Your name:
       <input
         onChange={(e) => handleInputChange(e.target.value)}
-        placeholder="John Smith"
+        placeholder="Example: John Smith"
         type="text"
       />
     </StyledNameInput>

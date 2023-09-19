@@ -2,6 +2,7 @@
 import PhotoUpload from './PhotoUpload';
 import NameInput from './NameInput';
 import ExpressionSelect from './ExpressionSelect';
+import XYSelection from './XYSelection';
 
 /* styled components --- */
 import {
@@ -46,6 +47,7 @@ function App() {
             <PhotoUpload />
             <NameInput />
             <ExpressionSelect />
+            <XYSelection />
           </StyledAsidePanel>
         </div>
         <article className="notification">

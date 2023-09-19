@@ -1,5 +1,6 @@
 import {
   aqua,
+  bgMain,
   darkGrey,
   grey,
   lightAqua,
@@ -52,7 +53,7 @@ export const StyledTitleNotification = styled(StyledTitle)`
 export const FlexColumn = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 7px;
   align-items: center;
   border-bottom: 2px dashed black;
   padding-bottom: 15px;
@@ -121,5 +122,50 @@ export const StyledSelectExpression = styled(FlexColumn)`
     color: ${lightGrey};
     border: 3px ${darkGrey} inset;
     box-shadow: 0px 0px 5px black inset;
+  }
+`;
+
+export const StyledXYSelection = styled(FlexColumn)``;
+
+export const MainButton = styled.button`
+  cursor: pointer;
+  padding: 10px 25px;
+  font-family: 'Roboto', sans-serif;
+  background-color: ${bgMain};
+  font-size: 15px;
+  border: 2px outset ${grey};
+  color: #fff;
+  box-shadow: 0px 5px 5px black;
+  transition: all 0.05s linear;
+  &:active {
+    translate: 0px 5px;
+    box-shadow: 0px 0px 3px black;
+    border-color: ${darkGrey};
+    color: #d3d3d3;
+    box-shadow: 0px 0px 0px black, 0px 0px 5px black inset;
+  }
+  &:hover {
+    color: ${lightAqua};
+  }
+`;
+
+export const StyledModal = styled.dialog`
+  background: ${grey};
+  border: none;
+  border-top: 3px solid ${orange};
+  border-bottom: 3px solid ${orange};
+  color: #fff;
+  text-align: center;
+  width: 100%;
+
+  p {
+    i {
+      font-weight: 500;
+    }
+    line-height: 24px;
+  }
+
+  &::backdrop {
+    background: rgba(0, 0, 0, 0.5);
   }
 `;
