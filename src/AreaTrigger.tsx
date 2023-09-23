@@ -2,12 +2,14 @@ import { useState } from 'react';
 
 /* components --- */
 import ModalDialog from './ModalDialog';
+import AreaSelection from './AreaSelection';
 
 /* styled-components --- */
 import { StyledXYSelection, MainButton } from './StyledComponents';
 
-function XYSelection() {
+function AreaTrigger() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSquaresOpen, setIsSquaresOpen] = useState(false);
 
   const handleModalClose = () => {
     setIsModalOpen(false);
@@ -16,7 +18,14 @@ function XYSelection() {
   return (
     <StyledXYSelection>
       <span>Choose screen area for additional security:</span>
-      <MainButton onClick={() => setIsModalOpen(true)}>Choose area</MainButton>
+      <MainButton
+        onClick={() => {
+          setIsModalOpen(true);
+          setIsSquaresOpen(true);
+        }}
+      >
+        Choose area
+      </MainButton>
 
       <ModalDialog
         handleModalClose={handleModalClose}
@@ -30,8 +39,10 @@ function XYSelection() {
           this concrete area for successful identification.
         </p>
       </ModalDialog>
+
+      {isSquaresOpen && <AreaSelection handleSquaresOpen={setIsSquaresOpen} />}
     </StyledXYSelection>
   );
 }
 
-export default XYSelection;
+export default AreaTrigger;

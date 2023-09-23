@@ -3,11 +3,11 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState: {
   userName: string;
   userExpression: string;
-  userXYEyePosition: never[] | number[];
+  userArea: null | DOMRect;
 } = {
   userName: '',
   userExpression: '',
-  userXYEyePosition: [],
+  userArea: null,
 };
 
 export const userSlice = createSlice({
@@ -20,7 +20,9 @@ export const userSlice = createSlice({
     setUserExpression(state, action) {
       state.userExpression = action.payload;
     },
-    setUserXYEyePosition(state, action) {},
+    setUserAreaXY(state, action) {
+      state.userArea = action.payload;
+    },
   },
 });
 

@@ -2,7 +2,7 @@
 import PhotoUpload from './PhotoUpload';
 import NameInput from './NameInput';
 import ExpressionSelect from './ExpressionSelect';
-import XYSelection from './XYSelection';
+import AreaTrigger from './AreaTrigger';
 
 /* styled components --- */
 import {
@@ -47,7 +47,7 @@ function App() {
             <PhotoUpload />
             <NameInput />
             <ExpressionSelect />
-            <XYSelection />
+            <AreaTrigger />
           </StyledAsidePanel>
         </div>
         <article className="notification">

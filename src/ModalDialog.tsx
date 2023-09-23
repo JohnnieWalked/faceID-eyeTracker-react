@@ -20,10 +20,8 @@ function ModalDialog({ title, isOpen, handleModalClose, children }: Props) {
   useEffect(() => {
     if (isOpen) {
       modalRef.current?.showModal();
-      document.body.style.cssText = 'overflow-y: hidden';
     } else {
       modalRef.current?.close();
-      document.body.style.cssText = 'overflow-y: auto';
     }
   }, [isOpen]);
 

@@ -157,6 +157,11 @@ export const StyledModal = styled.dialog`
   color: #fff;
   text-align: center;
   width: 100%;
+  transition: all 0.4s ease-in-out;
+
+  &::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+  }
 
   p {
     i {
@@ -164,8 +169,9 @@ export const StyledModal = styled.dialog`
     }
     line-height: 24px;
   }
+`;
 
-  &::backdrop {
-    background: rgba(0, 0, 0, 0.5);
-  }
+export const StyledSquaresWrapper = styled.section`
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(5, 1fr);
 `;
