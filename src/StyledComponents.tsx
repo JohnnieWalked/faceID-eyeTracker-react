@@ -1,7 +1,9 @@
 import {
   aqua,
   bgMain,
+  blue,
   darkGrey,
+  darkRed,
   grey,
   lightAqua,
   lightGrey,
@@ -22,7 +24,7 @@ export const StyledLink = styled.a`
   }
 `;
 
-export const StyledAsidePanel = styled.aside`
+export const StyledPanel = styled.aside`
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -34,7 +36,7 @@ export const StyledAsidePanel = styled.aside`
   font-weight: 300;
 `;
 
-export const StyledTitle = styled.h2`
+export const StyledTitle = styled.h2<{ $color?: string }>`
   margin: 0;
   font-weight: 400;
   text-transform: capitalize;
@@ -43,7 +45,7 @@ export const StyledTitle = styled.h2`
   font-style: italic;
   font-weight: 500;
   letter-spacing: 1px;
-  color: ${aqua};
+  color: ${(props) => props.$color || aqua};
 `;
 
 export const StyledTitleNotification = styled(StyledTitle)`
@@ -146,6 +148,39 @@ export const MainButton = styled.button`
   }
   &:hover {
     color: ${lightAqua};
+  }
+`;
+
+export const SecondaryButton = styled(MainButton)<{
+  $userPhoto?: string | null;
+  $userName?: string;
+  $isActive?: boolean;
+}>`
+  transition: all 0.1s ease-in-out;
+  padding: 10px;
+  width: 70px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  border-radius: 5px;
+  color: ${(props) => (props.$isActive ? darkRed : 'green')};
+  animation: ${(props) =>
+    props.$isActive ? 'none' : 'pulse infinite ease-in-out 2s'};
+  &:hover {
+    color: ${(props) => (props.$isActive ? darkRed : 'green')};
+  }
+  @keyframes pulse {
+    0% {
+      color: #00ff00;
+    }
+    50% {
+      color: #029602;
+    }
+    100% {
+      color: #00ff00;
+    }
   }
 `;
 

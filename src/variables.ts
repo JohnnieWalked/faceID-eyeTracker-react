@@ -9,3 +9,4 @@ export const lightAqua = "#A6E3E9";
 export const grey = "#484e58";
 export const aquaGrey = "#607d8b";
 export const lightBlue = "#61677A";
+export const darkRed = "#952323";

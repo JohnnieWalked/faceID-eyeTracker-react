@@ -1,12 +1,19 @@
+import { useEffect } from 'react';
+
 /* components --- */
 import PhotoUpload from './PhotoUpload';
 import NameInput from './NameInput';
 import ExpressionSelect from './ExpressionSelect';
 import AreaTrigger from './AreaTrigger';
+import Video from './Video';
+
+/* redux --- */
+import { useDispatch } from 'react-redux';
+import { AppDispatch, fetchModels } from './store';
 
 /* styled components --- */
 import {
-  StyledAsidePanel,
+  StyledPanel,
   StyledLink,
   StyledTitle,
   StyledTitleNotification,
@@ -15,8 +22,16 @@ import {
 /* icons and styles --- */
 import { AiFillGithub } from 'react-icons/ai';
 import './styles.scss';
+import { aquaGrey } from './variables';
 
 function App() {
+  const dispatch = useDispatch<AppDispatch>();
+
+  /* loading faceapi models */
+  useEffect(() => {
+    dispatch(fetchModels());
+  }, [dispatch]);
+
   return (
     <div className="pageContainer">
       <section className="header">
@@ -43,12 +58,12 @@ function App() {
       <section className="workspace">
         <div className="controlPanel">
           <StyledTitle>Control panel</StyledTitle>
-          <StyledAsidePanel>
+          <StyledPanel>
             <PhotoUpload />
             <NameInput />
             <ExpressionSelect />
             <AreaTrigger />
-          </StyledAsidePanel>
+          </StyledPanel>
         </div>
         <article className="notification">
           <StyledTitleNotification>Privacy</StyledTitleNotification>
@@ -68,6 +83,10 @@ function App() {
             </li>
           </ul>
         </article>
+        <div className="video">
+          <StyledTitle $color={aquaGrey}>Video section</StyledTitle>
+          <Video />
+        </div>
       </section>
     </div>
   );
