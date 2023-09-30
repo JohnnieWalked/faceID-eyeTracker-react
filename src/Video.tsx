@@ -13,7 +13,8 @@ import { BarLoader } from 'react-spinners';
 import { orange } from './variables';
 
 function Video() {
-  const [isError, setIsError] = useState<string | null>(null);
+  const [intervalID, setIntervalID] = useState<NodeJS.Timeout | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const [isActive, setIsActive] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const { userName } = useSelector((state: RootState) => state.userSlice);
@@ -22,23 +23,21 @@ function Video() {
   );
   const { isLoading } = useSelector((state: RootState) => state.faceapiSlice);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   function handleClick() {
-    if (!userPhoto || !userName) {
-      return setIsError(
-        'Photo or Name is missing. Please, check and try again.'
-      );
-    }
+    // if (!userPhoto || !userName) {
+    //   return setMessage(
+    //     'Photo or Name is missing. Please, check and try again.'
+    //   );
+    // }
+    // setMessage(null);
     setIsActive((state) => !state);
-    stream ? stopVideo() : startVideo();
-    setInterval(async () => {
-      if (!videoRef.current) return console.log('ERROR');
-      await faceapi
-        .detectSingleFace(videoRef.current, new faceapi.SsdMobilenetv1Options())
-        .withFaceExpressions();
-      // console.log(detections);
-    }, 100);
-    setIsError(null);
+    if (stream) {
+      stopVideo();
+    } else {
+      startVideo().then(() => faceDetection());
+    }
   }
 
   /* start webcam */
@@ -48,7 +47,7 @@ function Video() {
       if (videoRef.current) videoRef.current.srcObject = stream;
       setStream(stream);
     } catch (error) {
-      setIsError(`Error accessing the camera: ${error}`);
+      setMessage(`Error accessing the camera: ${error}`);
     }
   }
 
@@ -58,13 +57,41 @@ function Video() {
       stream.getTracks().forEach((track) => {
         track.stop();
       });
-      setStream(null);
+      intervalID ? clearInterval(intervalID) : null;
     }
+  }
+
+  function faceDetection() {
+    if (!videoRef.current || !canvasRef.current)
+      return setMessage('Oops, something went wrong!');
+    const canvas = canvasRef.current;
+    canvas.focus();
+    const context = canvas.getContext('2d');
+    const displaySize = {
+      width: videoRef.current.clientWidth,
+      height: videoRef.current.clientHeight,
+    };
+    faceapi.matchDimensions(canvas, displaySize);
+
+    const detectionInterval: NodeJS.Timeout = setInterval(async () => {
+      const detection = await faceapi
+        .detectSingleFace(
+          videoRef.current!,
+          new faceapi.SsdMobilenetv1Options()
+        )
+        .withFaceExpressions();
+      context!.clearRect(0, 0, canvas.width, canvas.height);
+      const resizedDetections = faceapi.resizeResults(detection, displaySize);
+      faceapi.draw.drawDetections(canvas, resizedDetections);
+    }, 100);
+    setIntervalID(detectionInterval);
   }
 
   return (
     <div className="videoWrapper">
-      <video ref={videoRef} autoPlay muted></video>
+      <video ref={videoRef} autoPlay muted />
+      <canvas ref={canvasRef} />
+
       <div className="videoWrapper_notification">
         <SecondaryButton
           onClick={handleClick}
@@ -74,11 +101,13 @@ function Video() {
         >
           <ImSwitch />
         </SecondaryButton>
-        {isError && (
+
+        {message && (
           <span className="text text_error">
-            Failure. <br /> {isError}
+            Failure. <br /> {message}
           </span>
         )}
+
         {isLoading && (
           <span className="text text_load">
             <BarLoader color={orange} />

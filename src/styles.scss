@@ -142,17 +142,26 @@ body::-webkit-scrollbar-thumb {
 }
 
 .videoWrapper {
-  margin: 0 auto;
   width: 500px;
-  grid-area: video;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  position: relative;
+  height: 350px;
+  margin: 0 auto;
   padding: 20px;
   border-radius: 5px;
   background-color: $dark-grey;
   box-shadow: 0px 0px 10px black inset;
+  canvas {
+    inset: 20px;
+    position: absolute;
+  }
   video {
+    position: relative;
     border-radius: 5px;
-    width: 100%;
-    height: 100%;
+    width: 500px;
+    height: 300px;
   }
   &_notification {
     display: flex;
