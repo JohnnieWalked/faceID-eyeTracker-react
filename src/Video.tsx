@@ -1,9 +1,10 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as faceapi from 'face-api.js';
 
 /* redux --- */
-import { useSelector } from 'react-redux';
-import { RootState } from './store';
+import { useSelector, useDispatch } from 'react-redux';
+import { AppDispatch, RootState } from './store';
+import { loadLabeledFaceDescriptors } from './store';
 
 /* icons & styles --- */
 import './styles.scss';
@@ -13,25 +14,42 @@ import { BarLoader } from 'react-spinners';
 import { orange } from './variables';
 
 function Video() {
+  const dispatch = useDispatch<AppDispatch>();
   const [intervalID, setIntervalID] = useState<NodeJS.Timeout | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isActive, setIsActive] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const [labeledDescriptors, setLabeledDescriptors] =
+    useState<faceapi.LabeledFaceDescriptors | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const { userName } = useSelector((state: RootState) => state.userSlice);
   const userPhoto = useSelector(
     (state: RootState) => state.uploadPhoto.uploadedPhoto
   );
-  const { isLoading } = useSelector((state: RootState) => state.faceapiSlice);
+  const { isLoading, isLoadingImage } = useSelector(
+    (state: RootState) => state.faceapiSlice
+  );
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  /* loading (promise) image */
+  useEffect(() => {
+    if (!userPhoto || !userName) return;
+    dispatch(
+      loadLabeledFaceDescriptors({ userPhoto: userPhoto, userName: userName })
+    )
+      .unwrap()
+      .then((data) => setLabeledDescriptors(data));
+  }, [userPhoto, userName, dispatch]);
+
+  /* handle button click */
   function handleClick() {
-    // if (!userPhoto || !userName) {
-    //   return setMessage(
-    //     'Photo or Name is missing. Please, check and try again.'
-    //   );
-    // }
-    // setMessage(null);
+    if (!userPhoto || !userName) {
+      return setMessage(
+        'Photo or Name is missing. Please, check and try again.'
+      );
+    }
+    setMessage(null);
     setIsActive((state) => !state);
     if (stream) {
       stopVideo();
@@ -57,15 +75,17 @@ function Video() {
       stream.getTracks().forEach((track) => {
         track.stop();
       });
+      setStream(null);
       intervalID ? clearInterval(intervalID) : null;
     }
   }
 
   function faceDetection() {
-    if (!videoRef.current || !canvasRef.current)
-      return setMessage('Oops, something went wrong!');
+    if (!videoRef.current || !canvasRef.current) {
+      return setMessage('Oops, something went wrong...');
+    }
+
     const canvas = canvasRef.current;
-    canvas.focus();
     const context = canvas.getContext('2d');
     const displaySize = {
       width: videoRef.current.clientWidth,
@@ -73,17 +93,42 @@ function Video() {
     };
     faceapi.matchDimensions(canvas, displaySize);
 
+    if (!labeledDescriptors) {
+      return setMessage('Please, wait until program analyzed Your photo.');
+    }
+
+    const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.6);
+
     const detectionInterval: NodeJS.Timeout = setInterval(async () => {
       const detection = await faceapi
         .detectSingleFace(
           videoRef.current!,
           new faceapi.SsdMobilenetv1Options()
         )
+        .withFaceLandmarks()
+        .withFaceDescriptor()
         .withFaceExpressions();
       context!.clearRect(0, 0, canvas.width, canvas.height);
-      const resizedDetections = faceapi.resizeResults(detection, displaySize);
-      faceapi.draw.drawDetections(canvas, resizedDetections);
+      const resizedDetection = faceapi.resizeResults(detection, displaySize);
+
+      if (!resizedDetection) {
+        return setMessage('Oops, something went wrong!');
+      }
+
+      const result = faceMatcher.findBestMatch(resizedDetection.descriptor);
+      if (result.label === userName) {
+        setSuccess('Identification successful!');
+      } else {
+        setSuccess(null);
+      }
+      const box = resizedDetection.detection.box;
+      const drawBox = new faceapi.draw.DrawBox(box, {
+        label: result.toString(),
+      });
+      drawBox.draw(canvas);
+      faceapi.draw.drawFaceExpressions(canvas, resizedDetection);
     }, 100);
+
     setIntervalID(detectionInterval);
   }
 
@@ -108,10 +153,19 @@ function Video() {
           </span>
         )}
 
+        {success && <span className="text text_success">{success}</span>}
+
         {isLoading && (
           <span className="text text_load">
             <BarLoader color={orange} />
             Loading models...
+          </span>
+        )}
+
+        {isLoadingImage && (
+          <span className="text text_load">
+            <BarLoader color={orange} />
+            Loading &amp; analyzing image...
           </span>
         )}
       </div>
