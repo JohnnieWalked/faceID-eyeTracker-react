@@ -17,12 +17,15 @@ function Video() {
   const dispatch = useDispatch<AppDispatch>();
   const [intervalID, setIntervalID] = useState<NodeJS.Timeout | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [continueMsg, setContinueMsg] = useState<string | null>(null);
   const [isActive, setIsActive] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [labeledDescriptors, setLabeledDescriptors] =
     useState<faceapi.LabeledFaceDescriptors | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const { userName } = useSelector((state: RootState) => state.userSlice);
+  const { userName, userExpression, userArea } = useSelector(
+    (state: RootState) => state.userSlice
+  );
   const userPhoto = useSelector(
     (state: RootState) => state.uploadPhoto.uploadedPhoto
   );
@@ -114,10 +117,31 @@ function Video() {
       if (!resizedDetection) {
         return setMessage('Oops, something went wrong!');
       }
+      const faceExpressions: { [key: string]: number } =
+        resizedDetection.expressions;
 
       const result = faceMatcher.findBestMatch(resizedDetection.descriptor);
       if (result.label === userName) {
-        setSuccess('Identification successful!');
+        if (
+          userExpression &&
+          faceExpressions[userExpression.toLowerCase()] > 0.8
+        ) {
+          if (userArea) {
+            setContinueMsg('Click here to continue identification.');
+          } else {
+            setSuccess('Identification successful!');
+          }
+        }
+        if (
+          userExpression &&
+          faceExpressions[userExpression.toLowerCase()] < 0.8
+        ) {
+          setSuccess(null);
+        } else if (!userExpression && !userArea) {
+          setSuccess('Identification successful!');
+        } else if (userArea && !userExpression) {
+          setSuccess('Click here to continue identification.');
+        }
       } else {
         setSuccess(null);
       }
@@ -154,6 +178,11 @@ function Video() {
         )}
 
         {success && <span className="text text_success">{success}</span>}
+        {continueMsg && (
+          <a href="EyesTrackerPage.html" target="_blank" className="text">
+            {continueMsg}
+          </a>
+        )}
 
         {isLoading && (
           <span className="text text_load">

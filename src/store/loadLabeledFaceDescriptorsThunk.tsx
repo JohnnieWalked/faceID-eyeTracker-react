@@ -19,9 +19,10 @@ export const loadLabeledFaceDescriptors = createAsyncThunk(
 
     if (!fullFaceDescription) {
       alert('No face detected. Please, try another image.');
+      return null;
     }
 
-    const faceDescriptors = [fullFaceDescription!.descriptor];
+    const faceDescriptors = [fullFaceDescription.descriptor];
     return new faceapi.LabeledFaceDescriptors(userName, faceDescriptors);
   }
 );
