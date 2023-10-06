@@ -117,8 +117,8 @@ function Video() {
       if (!resizedDetection) {
         return setMessage('Oops, something went wrong!');
       }
-      const faceExpressions: { [key: string]: number } =
-        resizedDetection.expressions;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const faceExpressions: any = resizedDetection.expressions;
 
       const result = faceMatcher.findBestMatch(resizedDetection.descriptor);
       if (result.label === userName) {
