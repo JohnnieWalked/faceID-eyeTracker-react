@@ -8,7 +8,7 @@ import { loadLabeledFaceDescriptors } from './store';
 
 /* icons & styles --- */
 import './styles.scss';
-import { SecondaryButton } from './StyledComponents';
+import { MainButton, SecondaryButton } from './StyledComponents';
 import { ImSwitch } from 'react-icons/im';
 import { BarLoader } from 'react-spinners';
 import { orange } from './variables';
@@ -16,8 +16,8 @@ import { orange } from './variables';
 function Video() {
   const dispatch = useDispatch<AppDispatch>();
   const [intervalID, setIntervalID] = useState<NodeJS.Timeout | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
-  const [continueMsg, setContinueMsg] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [continueMsg, setContinueMsg] = useState<boolean>(false);
   const [isActive, setIsActive] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [labeledDescriptors, setLabeledDescriptors] =
@@ -47,13 +47,14 @@ function Video() {
 
   /* handle button click */
   function handleClick() {
-    if (!userPhoto || !userName) {
-      return setMessage(
+    if (!userPhoto || !userName)
+      return setErrorMsg(
         'Photo or Name is missing. Please, check and try again.'
       );
-    }
-    setMessage(null);
+
+    setErrorMsg(null);
     setIsActive((state) => !state);
+
     if (stream) {
       stopVideo();
     } else {
@@ -61,18 +62,16 @@ function Video() {
     }
   }
 
-  /* start webcam */
   async function startVideo() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       if (videoRef.current) videoRef.current.srcObject = stream;
       setStream(stream);
     } catch (error) {
-      setMessage(`Error accessing the camera: ${error}`);
+      setErrorMsg(`Error accessing the camera: ${error}`);
     }
   }
 
-  /* stop webcam */
   function stopVideo() {
     if (stream) {
       stream.getTracks().forEach((track) => {
@@ -85,7 +84,7 @@ function Video() {
 
   function faceDetection() {
     if (!videoRef.current || !canvasRef.current) {
-      return setMessage('Oops, something went wrong...');
+      return setErrorMsg('Oops, something went wrong...');
     }
 
     const canvas = canvasRef.current;
@@ -97,7 +96,7 @@ function Video() {
     faceapi.matchDimensions(canvas, displaySize);
 
     if (!labeledDescriptors) {
-      return setMessage('Please, wait until program analyzed Your photo.');
+      return setErrorMsg('Please, wait until program analyzed Your photo.');
     }
 
     const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.6);
@@ -114,37 +113,38 @@ function Video() {
       context!.clearRect(0, 0, canvas.width, canvas.height);
       const resizedDetection = faceapi.resizeResults(detection, displaySize);
 
-      if (!resizedDetection) {
-        return setMessage('Oops, something went wrong!');
-      }
+      if (!resizedDetection) return setErrorMsg('Oops, something went wrong!');
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const faceExpressions: any = resizedDetection.expressions;
 
       const result = faceMatcher.findBestMatch(resizedDetection.descriptor);
+
       if (result.label === userName) {
         if (
           userExpression &&
-          faceExpressions[userExpression.toLowerCase()] > 0.8
+          faceExpressions[userExpression.toLowerCase()] > 0.9
         ) {
           if (userArea) {
-            setContinueMsg('Click here to continue identification.');
+            setContinueMsg(true);
           } else {
             setSuccess('Identification successful!');
           }
         }
         if (
           userExpression &&
-          faceExpressions[userExpression.toLowerCase()] < 0.8
+          faceExpressions[userExpression.toLowerCase()] < 0.9
         ) {
           setSuccess(null);
         } else if (!userExpression && !userArea) {
           setSuccess('Identification successful!');
         } else if (userArea && !userExpression) {
-          setSuccess('Click here to continue identification.');
+          setContinueMsg(true);
         }
       } else {
         setSuccess(null);
       }
+
       const box = resizedDetection.detection.box;
       const drawBox = new faceapi.draw.DrawBox(box, {
         label: result.toString(),
@@ -171,17 +171,25 @@ function Video() {
           <ImSwitch />
         </SecondaryButton>
 
-        {message && (
+        {errorMsg && (
           <span className="text text_error">
-            Failure. <br /> {message}
+            Failure. <br /> {errorMsg}
           </span>
         )}
 
         {success && <span className="text text_success">{success}</span>}
+
         {continueMsg && (
-          <a href="EyesTrackerPage.html" target="_blank" className="text">
-            {continueMsg}
-          </a>
+          <MainButton
+            onClick={() => {
+              intervalID && clearInterval(intervalID);
+              localStorage.setItem('XY-ID', JSON.stringify(userArea));
+            }}
+          >
+            <a href="https://johnniewalked.github.io/faceID-eyeTracker-2phase/">
+              Continue identification
+            </a>
+          </MainButton>
         )}
 
         {isLoading && (

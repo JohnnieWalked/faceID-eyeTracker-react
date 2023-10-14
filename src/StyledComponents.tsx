@@ -1,7 +1,6 @@
 import {
   aqua,
   bgMain,
-  blue,
   darkGrey,
   darkRed,
   grey,
@@ -139,6 +138,9 @@ export const MainButton = styled.button`
   color: #fff;
   box-shadow: 0px 5px 5px black;
   transition: all 0.05s linear;
+  a {
+    color: #fff;
+  }
   &:active {
     translate: 0px 5px;
     box-shadow: 0px 0px 3px black;
